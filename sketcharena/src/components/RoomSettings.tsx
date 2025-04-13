@@ -43,9 +43,6 @@ const RoomSettings = ({ onClose }: { onClose: () => void }) => {
 
         //  Show invite link in toast
         const inviteLink = `${window.location.origin}/invite/${roomId}`;
-
-        localStorage.setItem("roomId", roomId);
-        localStorage.setItem("username", roomData.username);
         localStorage.setItem("invite-link", inviteLink);
         navigate(`/gamedashboard/${roomId}`);
       }

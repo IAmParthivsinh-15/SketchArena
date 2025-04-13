@@ -42,7 +42,7 @@ const roomSchema = new mongoose.Schema(
     },
     maxPlayers: {
       type: Number,
-      default: 10,
+      default: 20,
     },
     wordCount: {
       type: Number,

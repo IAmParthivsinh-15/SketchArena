@@ -3,10 +3,14 @@ import { motion } from "framer-motion";
 import NavBar from "../components/NavBar";
 import AvatarModal from "../components/AvatarModal";
 import RoomSettings from "../components/RoomSettings";
+import JoinPublicRoom from "../components/JoinPublicRoom";
+import JoinPrivateRoom from "../components/JoinPrivateRoom";
 
 const Home = () => {
   const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
   const [roomSettings, setRoomSettings] = useState<boolean>(false);
+  const [joinPublicRoom, setJoinPublicRoom] = useState<boolean>(false);
+  const [joinPrivateRoom, setJoinPrivateRoom] = useState<boolean>(false);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -51,6 +55,7 @@ const Home = () => {
           <motion.div
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
+            onClick={() => setJoinPublicRoom(true)}
             className="rounded-2xl p-6 bg-gray-800 shadow-lg border-l-4 border-indigo-500 cursor-pointer transition"
           >
             <h3 className="text-xl font-semibold text-white">
@@ -65,6 +70,7 @@ const Home = () => {
           <motion.div
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
+            onClick={() => setJoinPrivateRoom(true)}
             className="rounded-2xl p-6 bg-gray-800 shadow-lg border-l-4 border-blue-500 cursor-pointer transition"
           >
             <h3 className="text-xl font-semibold text-white">
@@ -94,6 +100,12 @@ const Home = () => {
         <AvatarModal onClose={() => setShowAvatarModal(false)} />
       )}
       {roomSettings && <RoomSettings onClose={() => setRoomSettings(false)} />}
+      {joinPublicRoom && (
+        <JoinPublicRoom onClose={() => setJoinPublicRoom(false)} />
+      )}
+      {joinPrivateRoom && (
+        <JoinPrivateRoom onClose={() => setJoinPrivateRoom(false)} />
+      )}
     </div>
   );
 };
