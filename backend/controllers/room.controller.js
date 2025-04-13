@@ -76,6 +76,19 @@ export const createRoom = async (req, res) => {
       await redisClient.lpush("publicRooms", newRoom._id.toString());
     }
 
+    const io = req.app.get("io");
+
+    // Initialize room in Socket.IO memory
+    io.sockets.emit("join-room", {
+      ...redisRoomData,
+      currentPlayers: 1,
+    });
+
+    // Add to in-memory rooms object (used by Socket.IO)
+    if (!io.sockets.adapter.rooms.get(newRoom._id.toString())) {
+      io.sockets.adapter.rooms.set(newRoom._id.toString(), new Set());
+    }
+
     res.status(201).json({
       roomId: newRoom._id,
       player: {
@@ -166,6 +179,7 @@ export const joinPublicRoom = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const joinPrivateRoom = async (req, res) => {
   try {
     const { username, roomId } = req.body;

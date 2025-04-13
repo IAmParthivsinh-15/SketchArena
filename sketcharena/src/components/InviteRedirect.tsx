@@ -7,8 +7,8 @@ const InviteRedirect = () => {
 
   useEffect(() => {
     const imageUri = localStorage.getItem("avatar");
-
-    if (!imageUri) {
+    const username = localStorage.getItem("username");
+    if (!imageUri || !username) {
       navigate("/");
     } else {
       navigate(`/gamedashboard/${roomId}`);

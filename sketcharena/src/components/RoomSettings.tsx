@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import useRoomStore from "../store/roomStore";
+import socket from "../sockets/socket";
 
 const RoomSettings = ({ onClose }: { onClose: () => void }) => {
   interface RoomData {
@@ -27,27 +29,84 @@ const RoomSettings = ({ onClose }: { onClose: () => void }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  // Correct store selectors that match your RoomStore interface
+  const {
+    setCurrentRoomId,
+    setRoomId,
+    setUser,
+    setInviteLink,
+    setRoomSettings,
+  } = useRoomStore();
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/rooms/create", roomData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await axios.post(
+        "http://localhost:5000/api/rooms/create",
+        roomData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (res.status === 201) {
         const roomId = res.data.roomId;
+        const playerId = res.data.player.id;
+        const username = roomData.username;
 
         toast.success("Room created successfully!");
 
-        //  Show invite link in toast
+        // Save room/user info
         const inviteLink = `${window.location.origin}/invite/${roomId}`;
         localStorage.setItem("invite-link", inviteLink);
+
+        // Update store with new room data
+        setCurrentRoomId(roomId);
+        setRoomId(roomId);
+        setInviteLink(inviteLink);
+        setUser({
+          _id: playerId,
+          name: username,
+          isHost: true,
+        });
+        setRoomSettings({
+          isPrivate: roomData.isPrivate,
+          maxPlayers: roomData.players,
+          roundTime: roomData.roundTime,
+          maxRounds: roomData.maxRounds,
+          wordCount: roomData.wordCount,
+          hints: roomData.hints,
+        });
+
+        if (!socket.connected) {
+          socket.connect();
+          await new Promise<void>((resolve) => {
+            const onConnect = () => {
+              socket.off("connect", onConnect);
+              resolve();
+            };
+            socket.on("connect", onConnect);
+          });
+        }
+
+        console.log("Socket connected:", socket.connected);
+
+        socket.emit("join-room", {
+          roomId: roomId,
+          user: {
+            _id: playerId,
+            name: username,
+            isHost: true,
+          },
+        });
+
         navigate(`/gamedashboard/${roomId}`);
       }
     } catch (err: any) {
-      toast.error("Room creation failed!");
+      console.error("Room creation error:", err);
+      toast.error(err.response?.data?.message || "Room creation failed!");
     } finally {
       setLoading(false);
     }
